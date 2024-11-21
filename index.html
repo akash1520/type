@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Typing Speed Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: whitesmoke;
+        background-color: rgb(36, 39, 41);
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      #text {
+        font-size: larger;
+        letter-spacing: 1.5px;
+        line-height: 2;
+      }
+      .error {
+        background-color: rgb(181, 141, 141);
+        text-decoration: underline red;
+      }
+      .correct {
+        background-color: rgb(166, 206, 166);
+      }
+      .current {
+        background-color: #f0f0f04f;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center;">Typing Speed Test</h1>
+    <p id="time" style="color: red"></p>
+    <p id="text"></p>
+    <p id="stats"></p>
+
+    <script>
+      class TypingTest {
+        constructor() {
+          this.text = document.getElementById("text");
+          this.timeDisplay = document.getElementById("time");
+          this.statsDisplay = document.getElementById("stats");
+          this.textString = "please test your typing speed here.";
+          this.typedChars = new Array(this.textString.length).fill(null);
+          this.firstAttemptChars = new Array(this.textString.length).fill(true);
+          this.hasStarted = false;
+          this.startTime = null;
+          this.initializeTest();
+        }
+
+        randomWordGenerator() {
+          return fetch("https://random-word-api.vercel.app/api?words=30")
+            .then((response) => response.json())
+            .then((words) => {
+              this.textString = words.join(" ");
+              this.typedChars = new Array(this.textString.length).fill(null);
+              this.firstAttemptChars = new Array(this.textString.length).fill(true);
+              this.displayText();
+              return this.textString;
+            })
+            .catch((error) => {
+              console.error(error);
+              return "please test your typing speed here.";
+            });
+        }
+
+        initializeTest() {
+          this.typedChars = new Array(this.textString.length).fill(null);
+          this.firstAttemptChars = new Array(this.textString.length).fill(true);
+          this.hasStarted = false;
+          this.startTime = null;
+          this.timeDisplay.textContent = "";
+          this.statsDisplay.textContent = "";
+
+          this.randomWordGenerator().then(() => {
+            this.displayText();
+          });
+
+          document.removeEventListener("keydown", this.boundHandleKeyPress);
+          this.boundHandleKeyPress = this.handleKeyPress.bind(this);
+          this.boundHandleSpecialKey = this.handleSpecialKey.bind(this);
+          document.addEventListener("keydown", this.boundHandleKeyPress);
+        }
+
+        displayText() {
+          this.text.innerHTML = "";
+
+          for (let i = 0; i < this.textString.length; i++) {
+            const span = document.createElement("span");
+            span.textContent = this.textString[i];
+
+            if (this.typedChars[i] === true) {
+              span.classList.add("correct");
+            } else if (this.typedChars[i] === false) {
+              span.classList.add("error");
+            }
+
+            // Highlight the current character to type
+            if (
+              this.typedChars[i] === null &&
+              this.typedChars.filter((char) => char === null).length ===
+                this.textString.length - i
+            ) {
+              span.classList.add("current");
+            }
+
+            this.text.appendChild(span);
+          }
+        }
+
+        handleSpecialKey(event) {
+          if (event.key.toLowerCase() === "tab") {
+            this.initializeTest();
+            event.preventDefault();
+            return;
+          }
+        }
+
+        handleKeyPress(e) {
+          const key = e.key.toLowerCase();
+
+          if (key === "tab") {
+            this.initializeTest();
+            e.preventDefault();
+            return;
+          }
+
+          if (key === "backspace") {
+            // Find the last filled index (either correct or incorrect)
+            const lastFilledIndex = this.typedChars.reduce(
+              (acc, curr, idx) => (curr !== null ? idx : acc),
+              -1
+            );
+
+            if (lastFilledIndex !== -1) {
+              // Mark the character as not a first attempt if backspace is used
+              if (this.typedChars[lastFilledIndex] === false) {
+                this.firstAttemptChars[lastFilledIndex] = false;
+              }
+
+              // Reset the last filled index and clear all subsequent entries
+              this.typedChars[lastFilledIndex] = null;
+              for (
+                let i = lastFilledIndex + 1;
+                i < this.typedChars.length;
+                i++
+              ) {
+                this.typedChars[i] = null;
+              }
+
+              // Reset timer and stats if all characters are reset
+              if (this.typedChars.every((char) => char === null)) {
+                this.hasStarted = false;
+                this.startTime = null;
+                this.timeDisplay.textContent = "";
+                this.statsDisplay.textContent = "";
+              }
+
+              this.displayText();
+            }
+
+            e.preventDefault();
+            return;
+          }
+
+          if (/^[a-zA-Z .,]$/.test(e.key)) {
+            if (!this.hasStarted) {
+              this.startTime = new Date();
+              this.hasStarted = true;
+            }
+
+            const nextIndex = this.typedChars.findIndex(
+              (char) => char === null
+            );
+
+            if (nextIndex !== -1) {
+              if (key === this.textString[nextIndex].toLowerCase()) {
+                this.typedChars[nextIndex] = true;
+              } else {
+                this.typedChars[nextIndex] = false;
+                // Mark as not a first attempt if incorrect
+                this.firstAttemptChars[nextIndex] = false;
+              }
+
+              this.displayText();
+
+              // Calculate and display word-level accuracy
+              if (this.typedChars.every((char) => char !== null)) {
+                const endTime = new Date();
+                const duration = (endTime - this.startTime);
+
+                // Calculate first-attempt accuracy
+                const firstAttemptCorrectChars = this.firstAttemptChars.filter(
+                  (isFirstAttempt) => isFirstAttempt
+                ).length;
+                const totalChars = this.firstAttemptChars.length;
+                const accuracy = ((firstAttemptCorrectChars / totalChars) * 100).toFixed(2);
+
+                // Estimate words per minute
+                const words = this.textString.split(/\s+/).length;
+                const wordsPerMinute = Math.round((words / (duration / 1000)) * 60);
+
+                this.timeDisplay.textContent = `Time taken: ${duration.toFixed(
+                  2
+                )} seconds`;
+                this.statsDisplay.textContent = `Accuracy: ${accuracy}% | Speed: ${wordsPerMinute} WPM`;
+
+                document.removeEventListener(
+                  "keydown",
+                  this.boundHandleKeyPress
+                );
+                document.addEventListener(
+                  "keydown",
+                  this.boundHandleSpecialKey
+                );
+              }
+            }
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => new TypingTest());
+    </script>
+  </body>
+</html>
