@@ -27,10 +27,58 @@
       .current {
         background-color: #f0f0f04f;
       }
+      #word-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      #word-buttons button {
+        background-color: transparent;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-flex;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      #word-buttons button:hover {
+        background-color: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.584);
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-flex;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      #custom-words {
+        display: none;
+        margin-top: 10px;
+        text-align: center;
+      }
     </style>
   </head>
   <body>
     <h1 style="text-align: center;">Typing Speed Test</h1>
+    <div id="word-buttons">
+      <button onclick="typingTest.setWordCount(30)">30 Words</button>
+      <button onclick="typingTest.setWordCount(60)">60 Words</button>
+      <button onclick="typingTest.showCustomWordInput()">Custom</button>
+    </div>
+    <div id="custom-words">
+      <input type="number" id="custom-word-input" min="1" max="100" placeholder="Enter number of words">
+      <button onclick="typingTest.setCustomWordCount()">Start</button>
+    </div>
     <p id="time" style="color: red"></p>
     <p id="text"></p>
     <p id="stats"></p>
@@ -42,6 +90,7 @@
           this.timeDisplay = document.getElementById("time");
           this.statsDisplay = document.getElementById("stats");
           this.textString = "please test your typing speed here.";
+          this.wordCount = 30; // Default word count
           this.typedChars = new Array(this.textString.length).fill(null);
           this.firstAttemptChars = new Array(this.textString.length).fill(true);
           this.hasStarted = false;
@@ -49,8 +98,8 @@
           this.initializeTest();
         }
 
-        randomWordGenerator() {
-          return fetch("https://random-word-api.vercel.app/api?words=30")
+        randomWordGenerator(wordCount = this.wordCount) {
+          return fetch(`https://random-word-api.vercel.app/api?words=${wordCount}`)
             .then((response) => response.json())
             .then((words) => {
               this.textString = words.join(" ");
@@ -63,6 +112,29 @@
               console.error(error);
               return "please test your typing speed here.";
             });
+        }
+
+        setWordCount(count) {
+          this.wordCount = count;
+          this.initializeTest();
+          document.getElementById("custom-words").style.display = "none";
+        }
+
+        showCustomWordInput() {
+          document.getElementById("custom-words").style.display = "block";
+        }
+
+        setCustomWordCount() {
+          const customWordInput = document.getElementById("custom-word-input");
+          const customWordCount = parseInt(customWordInput.value);
+          
+          if (customWordCount && customWordCount >= 1 && customWordCount <= 100) {
+            this.wordCount = customWordCount;
+            this.initializeTest();
+            document.getElementById("custom-words").style.display = "none";
+          } else {
+            alert("Please enter a number between 1 and 100");
+          }
         }
 
         initializeTest() {
@@ -220,7 +292,7 @@
         }
       }
 
-      document.addEventListener("DOMContentLoaded", () => new TypingTest());
+      const typingTest = new TypingTest();
     </script>
   </body>
 </html>
