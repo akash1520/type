@@ -3,73 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <title>Typing Speed Test</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        color: #646669;
-        background-color: rgb(36, 39, 41);
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-      #text {
-        font-size: larger;
-        letter-spacing: 1.5px;
-        line-height: 2;
-      }
-      .error {
-        background-color: #323437;
-        text-decoration: underline red;
-      }
-      .correct {
-        color:whitesmoke;
-      }
-      .current {
-        background-color: #f0f0f04f;
-      }
-      #word-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 20px;
-      }
-      #word-buttons button {
-        background-color: transparent;
-        border: none;
-        color: white;
-        padding: 10px 20px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-flex;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 4px;
-      }
-
-      #word-buttons button:hover {
-        background-color: transparent;
-        border: none;
-        color: rgba(255, 255, 255, 0.584);
-        padding: 10px 20px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-flex;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 4px;
-      }
-
-      #custom-words {
-        display: none;
-        margin-top: 10px;
-        text-align: center;
-      }
-    </style>
-  </head>
-  <body>
-    <h1 style="text-align: center;">Typing Speed Test</h1>
+  <body style="display: flex; flex-direction: column; align-items: center; justify-items: center;">
+    <h1 style="text-align: center;font-size: 400%;">GOAT-type</h1>
     <div id="word-buttons">
       <button onclick="typingTest.setWordCount(30)">30 Words</button>
       <button onclick="typingTest.setWordCount(60)">60 Words</button>
@@ -82,7 +17,6 @@
     <p id="time" style="color: red"></p>
     <p id="text"></p>
     <p id="stats"></p>
-
     <script>
       class TypingTest {
         constructor() {
@@ -121,7 +55,8 @@
         }
 
         showCustomWordInput() {
-          document.getElementById("custom-words").style.display = "block";
+          const currentDisplay = document.getElementById("custom-words").style.display;
+          document.getElementById("custom-words").style.display = currentDisplay === "block" ? 'none' : "block";
         }
 
         setCustomWordCount() {
@@ -145,10 +80,7 @@
           this.timeDisplay.textContent = "";
           this.statsDisplay.textContent = "";
 
-          this.randomWordGenerator().then(() => {
-            this.displayText();
-          });
-
+          this.randomWordGenerator();
           document.removeEventListener("keydown", this.boundHandleKeyPress);
           this.boundHandleKeyPress = this.handleKeyPress.bind(this);
           this.boundHandleSpecialKey = this.handleSpecialKey.bind(this);
@@ -295,4 +227,68 @@
       const typingTest = new TypingTest();
     </script>
   </body>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #8698e0;
+        background-color: rgb(36, 39, 41);
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      #text {
+        font-size: larger;
+        letter-spacing: 1.5px;
+        line-height: 2;
+      }
+      .error {
+        background-color: #323437;
+        text-decoration: underline red;
+      }
+      .correct {
+        color:whitesmoke;
+      }
+      .current {
+        background-color: rgba(255, 255, 255, 0.738);
+      }
+      #word-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      #word-buttons button {
+        background-color: transparent;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-flex;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      #word-buttons button:hover {
+        background-color: transparent;
+        border: none;
+        color: #8698e0;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-flex;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      #custom-words {
+        display: none;
+        margin-top: 10px;
+        text-align: center;
+      }
+    </style>
 </html>
